@@ -1,7 +1,5 @@
 package my.algo.base.stack.usage;
 
-import static org.hamcrest.CoreMatchers.describedAs;
-
 import java.util.Scanner;
 import java.util.Stack;
 import java.util.regex.Matcher;
