@@ -1,10 +1,7 @@
 package my.algo.priorityqueue;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.TreeSet;
+import javax.swing.plaf.synth.SynthTextAreaUI;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -13,7 +10,7 @@ public class SortingList {
 	public static void main(String[] args) {
 		
 		Person p1 = new Person();
-		p1.setName("Amit");
+		p1.setName("VAmit");
 		p1.setAge(43);
 		p1.setAddress("61 manville hill");
 		
@@ -31,10 +28,13 @@ public class SortingList {
 		
 		List<Person> p = new ArrayList<Person>();
 		p.add(p2);p.add(p1);  p.add(p3);
-		
+
+		//Sort by name
+		p.sort(Comparator.comparing(Person::getName));
+		System.out.println(p);
+
 		List<String> names = p.stream().map(Person::getName).collect(Collectors.toList());
-		
-		Set<String> set = p.stream().map(Person::getName).collect(Collectors.toCollection(TreeSet::new));
+        Set<String> set = p.stream().map(Person::getName).collect(Collectors.toCollection(TreeSet::new));
 
 		
 
