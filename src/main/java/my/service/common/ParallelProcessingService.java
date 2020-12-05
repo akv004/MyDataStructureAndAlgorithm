@@ -8,25 +8,55 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class ParallelProcessingService<U,R> {
-public Function<U, R> processingResource;
+ public Function<U, R> processResource;
 
-ParallelProcessingService(Function<U,R> processingResource){
-    this.processingResource = processingResource;
-}
+    ParallelProcessingService(Function<U, R> processResource) {
+        this.processResource = processResource
+    }
 
-List<R> getListOfResultsAsynchronously(List<U> requestOptionList){
-    List<ComparableFuture<R>> compFut = requestOptionList
-            .stream()
-            .map(requestOptions -> processResourceAsynch(requestOptionList))
-            .collect(Collectors.toList());
-    return compFut.stream()
-            .map(compFutureItem -> compFutureItem.join())
-            .collec(Collectors.toList());
-}
+    List<R> getListOfResultsAsynchronously(List<U> requestOptionsList) {
+        List<CompletableFuture<R>> compFut = requestOptionsList
+                .stream()
+                .map { requestOptions -> return processResourceAsync(requestOptions) }
+                .collect(Collectors.toList());
 
-public CompletableFuture<R> processResourceAsynch(U requestOptions){
-    return CompletableFuture.supplyAsync({ -> processingResource.apply(requestOptions)})
-            .orTimeout(4, TimeUnit.MINUTES);
-}
+        return compFut.stream()
+                .map { compFutureItem -> compFutureItem.join() }
+                .filter { res -> res != null }
+                .collect(Collectors.toList());
+    }
 
+    public CompletableFuture<R> processResourceAsync(U requestOptions) {
+        return CompletableFuture.supplyAsync(
+                { -> processResource.apply(requestOptions) }
+        ).orTimeout(4, TimeUnit.MINUTES);
+    }
+
+    List<R> getListOfResultsParallelStream(List<U> requestOptionsList) {
+        List<R> compFut = requestOptionsList
+                .parallelStream()
+                .map { requestOptions -> return processResource.apply(requestOptions) }
+                .filter { res -> res != null }
+                .collect(Collectors.toList());
+        return compFut
+    }
+
+    List<R> getListOfResultsAsynchronously(List<U> requestOptionsList, ExecutorService executor) {
+        List<CompletableFuture<R>> compFut = requestOptionsList
+                .stream()
+                .map { requestOptions -> return processResourceAsync(requestOptions, executor) }
+                .collect(Collectors.toList());
+
+        return compFut.stream()
+                .map { compFutureItem -> compFutureItem.join() }
+                .filter { res -> res != null }
+                .collect(Collectors.toList());
+    }
+
+    public CompletableFuture<R> processResourceAsync(U requestOptions, ExecutorService executor) {
+        return CompletableFuture.supplyAsync(
+                { -> processResource.apply(requestOptions) },
+                executor
+        ).orTimeout(4, TimeUnit.MINUTES);
+    }
 }
